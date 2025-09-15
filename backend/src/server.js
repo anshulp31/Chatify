@@ -12,6 +12,8 @@ const app=express();
 
 //middleware to acess the users payload
 app.use(express.json());
+
+//This is used to parse the cookie
 app.use(cookieParser());
 
 app.use("/api/auth",authRoutes);

@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import { generateToken } from "../lib/utils.js";
 import { sendWelcomeEmail } from "../emails/emailHandlers.js";
 import {ENV} from "../lib/env.js"
+import cloudinary from "../lib/cloudinary.js";
 export const signup=async(req,res)=>{
      const {fullName, email, password}=req.body;
      try {
@@ -73,6 +74,11 @@ export const signup=async(req,res)=>{
 export const login=async(req,res)=>{
     const {email,password}=req.body;
     try{
+        if(!email || !password){
+            return res.status(400).json({
+                message:"All fields are required"
+            })
+        }
         const user=await User.findOne({email});
         //never tell the user which field is incorrect
         if(!user){
@@ -104,4 +110,27 @@ export const logout=async(_, res)=>{
     res.status(200).json({
         message:"Logout successful"
     })
+}
+
+export const updateProfile=async(req,res)=>{
+    try {
+        const {profilePicture}=req.body;
+        if(!profilePicture){
+            return res.status(400).json({
+                message:"Profile pic is requires"
+            })
+        }
+        const userId=req.user._id;
+        const uploadResponse=await cloudinary.uploader.upload(profilePicture);
+        const updatedUser=await User.findByIdAndUpdate(userId,{ profilePicture:uploadResponse.secure_url},{new:true})
+
+        res.status(200).json({
+            message:"Profilepic updated successfully",
+            updatedUser
+        })
+    } catch (error) {
+        res.status(500).json({
+            message:"Internal server error"
+        })
+    }
 }
