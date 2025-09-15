@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import { generateToken } from "../lib/utils.js";
 import { sendWelcomeEmail } from "../emails/emailHandlers.js";
+import {ENV} from "../lib/env.js"
 export const signup=async(req,res)=>{
      const {fullName, email, password}=req.body;
      try {
@@ -44,7 +45,7 @@ export const signup=async(req,res)=>{
             const savedUser=await newUser.save();
             generateToken(savedUser,res);
             try {
-                await sendWelcomeEmail(savedUser.email,savedUser.fullName,process.env.CLIENT_URL);
+                await sendWelcomeEmail(savedUser.email,savedUser.fullName,ENV.CLIENT_URL);
             } catch (error) {
                 throw new Error("Getting error while sending the mail",error);
             }
@@ -70,9 +71,37 @@ export const signup=async(req,res)=>{
 }
 
 export const login=async(req,res)=>{
-    
+    const {email,password}=req.body;
+    try{
+        const user=await User.findOne({email});
+        //never tell the user which field is incorrect
+        if(!user){
+            return res.status(400).json({
+                message:"Invalid Credentials"
+            })
+        }
+        const isPassCorrect = await bcrypt.compare(password,user.password)
+        if(isPassCorrect){
+            generateToken(user._id, res);
+            res.status(200).json({
+                message:"Login successful",
+                _id:user._id,
+                fullName:user.fullName,
+                profilePicture:user.profilePicture,
+                email:user.email
+            })
+        }
+        
+    }catch(error){
+        res.status(500).json({
+            message:"Internal server error"
+        })
+    }
 }
 
-export const logout=async(req,res)=>{
-    
+export const logout=async(_, res)=>{
+    res.cookie("jwt","",{maxAge:0});
+    res.status(200).json({
+        message:"Logout successful"
+    })
 }

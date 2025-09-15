@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
+import { ENV } from "./env.js";
 
-const JWT_SECRET=process.env.JWT_SECRET || "chatify@6068"
+const JWT_SECRET=ENV.JWT_SECRET || "chatify@6068"
 export const generateToken=(userId,res)=>{
     const token= jwt.sign({userId},JWT_SECRET,{
         expiresIn:"7d"
