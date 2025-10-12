@@ -5,6 +5,7 @@ import authRoutes from "./routes/authRoutes.js"
 import messageRoutes from "./routes/messageRoutes.js"
 import {connectDb} from "./lib/db.js"
 import {ENV} from "./lib/env.js"
+import cors from "cors";
 
 dotenv.config();
 
@@ -13,6 +14,10 @@ const app=express();
 
 //middleware to acess the users payload
 app.use(express.json());
+app.use(cors({
+    origin:ENV.CLIENT_URL,
+    credentials:true,
+}))
 
 //This is used to parse the cookie
 app.use(cookieParser());
