@@ -32,7 +32,32 @@ export const useAuthStore = create((set,get)=>({
         } finally{
             set({isBusy:false});
         }
+    },
+
+    login:async(data)=>{
+        try {
+            set({isBusy:true});
+            const res= await axiosInstance.post('/auth/login',data);
+            set({authUser:res.data});
+        } catch (error) {
+            console.log("Error while logging in user",error);
+            set({authUser:null});
+            toast.error(error.response.data);
+        }finally{
+            set({isBusy:false})
+        }
+    },
+
+    logout:async()=>{
+        try {
+            const res= await axiosInstance.post('/auth/logout');
+            set({authUser:res.data});
+        } catch (error) {
+            console.log("Error while logging out user",error);
+            set({authUser:null});
+            toast.error(error.response.data);
+        }finally{
+            set({isBusy:false})
+        }
     }
-
-
 }));
